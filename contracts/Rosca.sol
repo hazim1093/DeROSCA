@@ -42,16 +42,18 @@ contract ROSCA {
         require(msg.value == contributionAmount, "Invalid Contribution Amount, w.r.t the total amount");
         _addParticipant(msg.sender, true);
 
-        // Initialize first round
-        currentRound = 1;
-        rounds[currentRound].recipient = msg.sender; // First contributor gets first round
+        rounds[0].recipient = msg.sender; // Owner gets first round (0)
+        // Track owner's contribution for round 0
+        _processContribution(msg.sender, msg.value);
     }
 
     function registerParticipant() public payable {
         require(!isParticipant(msg.sender), "User Already Registered");
         require(msg.value == contributionAmount, "Invalid Contribution Amount");
+        require(participantList.length < totalParticipants, "Rosca is Full, All participants already registered");
 
         _addParticipant(msg.sender, false);
+        _processContribution(msg.sender, msg.value);
 
         emit ParticipantRegistered(msg.sender);
     }
@@ -60,24 +62,9 @@ contract ROSCA {
         return participants[user].user != address(0); // Default value for address i.e. 0x0000000000000000000000000000000000000000
     }
 
-    function _addParticipant(address _addr,bool _isAdmin) private {
-        participants[_addr] = Participant({
-            user: _addr,
-            isAdmin: _isAdmin,
-            lastPaid: block.timestamp
-        });
-        participantList.push(_addr);
-    }
-
     // Contribute to the current round
     function contribute() public payable {
-        require(isParticipant(msg.sender), "Not a registered participant");
-        require(msg.value == contributionAmount, "Invalid contribution amount");
-        require(!rounds[currentRound].hasContributed[msg.sender], "Already contributed this round");
-
-        rounds[currentRound].hasContributed[msg.sender] = true;
-        rounds[currentRound].totalContributed += msg.value;
-
+        _processContribution(msg.sender, msg.value);
         emit ContributionMade(msg.sender, currentRound, msg.value);
     }
 
@@ -94,29 +81,17 @@ contract ROSCA {
 
         emit PoolDistributed(msg.sender, currentRound, actualTotalAmount);
 
-        // Start next round
-        _startNextRound();
-    }
-
-    // Internal function to start the next round
-    function _startNextRound() private {
-        require(currentRound < totalParticipants, "All rounds completed");
-
-        currentRound++;
-
-        // Determine next recipient (simple round-robin for now)
-        uint256 nextRecipientIndex = (currentRound - 1) % participantList.length;
-        address nextRecipient = participantList[nextRecipientIndex];
-        require(nextRecipient != address(0), "Invalid next recipient");
-
-        rounds[currentRound].recipient = nextRecipient;
-
-        emit RoundStarted(currentRound, nextRecipient);
+        // Only start next round if not in last round
+        if (currentRound < totalParticipants - 1) {
+            _startNextRound();
+        }
+        // Last round just gets marked as distributed, no round increment
     }
 
     // View function to check if user can claim the pool
     function canClaimPool(address user) public view returns (bool) {
-        return rounds[currentRound].recipient == user &&
+        return currentRound < totalParticipants &&  // Check we haven't gone beyond last round
+               rounds[currentRound].recipient == user &&
                rounds[currentRound].totalContributed == actualTotalAmount &&
                !rounds[currentRound].distributed;
     }
@@ -124,5 +99,33 @@ contract ROSCA {
     // View function to check if user has contributed in current round
     function hasContributed(address user) public view returns (bool) {
         return rounds[currentRound].hasContributed[user];
+    }
+
+    function _addParticipant(address _addr,bool _isAdmin) private {
+        participants[_addr] = Participant({
+            user: _addr,
+            isAdmin: _isAdmin,
+            lastPaid: block.timestamp
+        });
+        participantList.push(_addr);
+    }
+
+    function _processContribution(address user, uint256 amount) private {
+        require(isParticipant(user), "Not a registered participant");
+        require(amount == contributionAmount, "Invalid contribution amount");
+        require(!rounds[currentRound].hasContributed[user], "Already contributed this round");
+
+        rounds[currentRound].hasContributed[user] = true;
+        rounds[currentRound].totalContributed += amount;
+    }
+
+    // Internal function to start the next round
+    function _startNextRound() private {
+        currentRound++;
+        address nextRecipient = participantList[currentRound];
+        require(nextRecipient != address(0), "Invalid next recipient");
+
+        rounds[currentRound].recipient = nextRecipient;
+        emit RoundStarted(currentRound, nextRecipient);
     }
 }
