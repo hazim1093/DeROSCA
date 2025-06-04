@@ -1,4 +1,4 @@
-name: Solidity CI
+name: DeROSCA CI
 
 on:
   push:
