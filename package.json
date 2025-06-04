@@ -2,6 +2,11 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
-    "hardhat": "^2.24.1"
+    "@nomiclabs/hardhat-solhint": "^4.0.1",
+    "hardhat": "^2.24.1",
+    "hardhat-contract-sizer": "^2.10.0",
+    "hardhat-gas-reporter": "^2.3.0",
+    "solhint": "^5.1.0",
+    "solidity-coverage": "^0.8.16"
   }
 }
