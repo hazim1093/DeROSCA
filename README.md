@@ -1,10 +1,7 @@
 # DeROSCA
 A decentralised ROSCA (Tandas/Susu/Kameti/Hui) implementation
 
-[![Lint Status](https://github.com/hazim1093/DeROSCA/workflows/DeROSCA%20CI/badge.svg)](https://github.com/hazim1093/DeROSCA/actions?query=workflow%3A%22DeROSCA+CI%22+branch%3Amain)
-[![Security Status](https://github.com/hazim1093/DeROSCA/workflows/DeROSCA%20CI/badge.svg)](https://github.com/hazim1093/DeROSCA/actions?query=workflow%3A%22DeROSCA+CI%22+branch%3Amain)
-[![Test Status](https://github.com/hazim1093/DeROSCA/workflows/DeROSCA%20CI/badge.svg)](https://github.com/hazim1093/DeROSCA/actions?query=workflow%3A%22DeROSCA+CI%22+branch%3Amain)
-[![Gas Analysis Status](https://github.com/hazim1093/DeROSCA/workflows/DeROSCA%20CI/badge.svg)](https://github.com/hazim1093/DeROSCA/actions?query=workflow%3A%22DeROSCA+CI%22+branch%3Amain)
+[![CI Status](https://github.com/hazim1093/DeROSCA/actions/workflows/ci.yml/badge.svg)](https://github.com/hazim1093/DeROSCA/actions/workflows/ci.yml)
 
 ## How to Run
 
