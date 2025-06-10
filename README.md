@@ -20,3 +20,15 @@ Deploy:
 npx hardhat node # on a separate shell
 npx hardhat ignition deploy ./ignition/modules/myCon.ts --network localhost
 ```
+
+## Testing
+
+Running Slither:
+- Make sure slither is install
+  ```
+  pip3 install slither-analyzer
+  ```
+- Run slither
+  ```
+  slither .
+  ```

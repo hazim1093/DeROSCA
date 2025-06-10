@@ -39,7 +39,7 @@ contract ROSCA {
         contributionAmount = totalAmount / totalParticipants;
         actualTotalAmount = contributionAmount * totalParticipants;
 
-        require(msg.value == contributionAmount, "Invalid Contribution Amount, w.r.t the total amount");
+        require(msg.value == contributionAmount, "Invalid Contribution Amount");
         _addParticipant(msg.sender, true);
 
         rounds[0].recipient = msg.sender; // Owner gets first round (0)
