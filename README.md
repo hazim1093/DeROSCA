@@ -81,16 +81,18 @@ A group savings system where members contribute periodically and take turns rece
    ```sh
    # Deploy to testnet (e.g., Sepolia)
    npx hardhat ignition deploy ./ignition/modules/Rosca.ts --network sepolia
+   ```
+
 ### Security Analysis
 
-Running Slither Analysis:
-```sh
-# Install Slither
-pip3 install slither-analyzer
-
-# Run analysis
-slither .
-```
+- Make sure Slither is installed
+  ```sh
+  pip3 install slither-analyzer
+  ```
+- Run Slither
+  ```sh
+  slither .
+  ```
 
 ## Documentation
 - [Usage Guide](USAGE.md) - Guide for Smart contract interaction
