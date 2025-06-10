@@ -101,6 +101,36 @@ contract ROSCA {
         return rounds[currentRound].hasContributed[user];
     }
 
+    // View function to get current round status
+    function getCurrentRoundStatus() public view returns (
+        uint256 roundNumber,
+        address recipient,
+        uint256 totalContributed,
+        uint256 targetAmount,
+        bool isDistributed
+    ) {
+        Round storage round = rounds[currentRound];
+        return (
+            currentRound,
+            round.recipient,
+            round.totalContributed,
+            actualTotalAmount,
+            round.distributed
+        );
+    }
+
+    // View function to get remaining required contribution for current round
+    function getRemainingContribution() public view returns (uint256) {
+        Round storage round = rounds[currentRound];
+        if (round.distributed) {
+            return 0;
+        }
+        if (round.totalContributed >= actualTotalAmount) {
+            return 0;
+        }
+        return actualTotalAmount - round.totalContributed;
+    }
+
     function _addParticipant(address _addr,bool _isAdmin) private {
         participants[_addr] = Participant({
             user: _addr,

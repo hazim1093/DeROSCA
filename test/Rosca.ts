@@ -282,4 +282,74 @@ describe("ROSCA", function () {
       expect(round1[0].toLowerCase()).to.equal(participant1.account.address.toLowerCase());
     });
   });
+
+  describe("View Functions", function() {
+    it("Should return correct current round status", async function() {
+      const { rosca, owner, participant1, participant2, participant3, contributionAmount } = await registeredRosca();
+
+      // Check initial round status (round 0)
+      const initialStatus = await rosca.read.getCurrentRoundStatus();
+      expect(initialStatus[0]).to.equal(0n); // roundNumber
+      expect(initialStatus[1].toLowerCase()).to.equal(owner.account.address.toLowerCase()); // recipient
+      expect(initialStatus[2]).to.equal(contributionAmount * 4n); // totalContributed (all participants registered)
+      expect(initialStatus[3]).to.equal(contributionAmount * 4n); // targetAmount
+      expect(initialStatus[4]).to.equal(false); // isDistributed
+
+      // Distribute pool for round 0 since all participants registered
+      await rosca.write.distributePool({
+        account: owner.account
+      });
+
+      // Check round 1 status (should be empty)
+      const nextRoundStatus = await rosca.read.getCurrentRoundStatus();
+      expect(nextRoundStatus[0]).to.equal(1n); // roundNumber
+      expect(nextRoundStatus[1].toLowerCase()).to.equal(participant1.account.address.toLowerCase()); // new recipient
+      expect(nextRoundStatus[2]).to.equal(0n); // totalContributed (should be 0 for new round)
+      expect(nextRoundStatus[3]).to.equal(contributionAmount * 4n); // targetAmount stays same
+      expect(nextRoundStatus[4]).to.equal(false); // isDistributed
+    });
+
+    it("Should return correct remaining contribution amount", async function() {
+      const { rosca, owner, participant1, participant2, participant3, contributionAmount } = await registeredRosca();
+
+      // Initial remaining should be 0 since all participants registered
+      const initialRemaining = await rosca.read.getRemainingContribution();
+      expect(initialRemaining).to.equal(0n); // All participants registered = all contributed
+
+      // Distribute pool to move to next round
+      await rosca.write.distributePool({
+        account: owner.account
+      });
+
+      // In new round, we need all contributions again
+      const newRoundRemaining = await rosca.read.getRemainingContribution();
+      expect(newRoundRemaining).to.equal(contributionAmount * 4n); // Need all contributions for new round
+
+      // Make one contribution
+      await rosca.write.contribute({
+        value: contributionAmount,
+        account: participant1.account
+      });
+
+      const afterOneContribution = await rosca.read.getRemainingContribution();
+      expect(afterOneContribution).to.equal(contributionAmount * 3n); // Need 3 more contributions
+
+      // Complete all contributions
+      await rosca.write.contribute({
+        value: contributionAmount,
+        account: participant2.account
+      });
+      await rosca.write.contribute({
+        value: contributionAmount,
+        account: participant3.account
+      });
+      await rosca.write.contribute({
+        value: contributionAmount,
+        account: owner.account
+      });
+
+      const afterAllContributions = await rosca.read.getRemainingContribution();
+      expect(afterAllContributions).to.equal(0n); // All contributions received
+    });
+  });
 });
