@@ -12,6 +12,8 @@ A group savings system where members contribute periodically and take turns rece
 - 🔍 **Transparent**: On-chain verification
 - 🤝 **Decentralized**: No intermediaries
 
+> **Note**: This is a test implementation. Deploying and interacting with the contract on mainnet will incur gas fees for all operations (deployment, registration, pool distribution).
+
 ## Technical Stack
 
 - **Smart Contracts**: Solidity 0.8.x
@@ -68,20 +70,76 @@ A group savings system where members contribute periodically and take turns rece
 
 ### Deployment
 
-1. **Local Development**
-   ```sh
-   # Start local node
+1. **Start a local Hardhat node** (in a separate terminal):
+   ```bash
    npx hardhat node
-
-   # Deploy contract
-   npx hardhat ignition deploy ./ignition/modules/Rosca.ts --network localhost
    ```
 
-2. **Testing Networks**
-   ```sh
-   # Deploy to testnet (e.g., Sepolia)
-   npx hardhat ignition deploy ./ignition/modules/Rosca.ts --network sepolia
+2. **Deploy the contract** using the existing Ignition module:
+   ```bash
+   npx hardhat ignition deploy ignition/modules/RoscaModule.ts --network localhost
    ```
+   Note the deployed contract address from the output.
+
+### Contract Interaction
+
+1. **Start the Hardhat console**:
+   ```bash
+   npx hardhat console --network localhost
+   ```
+
+2. **Example interactions**:
+   ```javascript
+   // Import parseEther from viem
+   const { parseEther } = await import('viem')
+
+   // Get contract instance
+   const rosca = await hre.viem.getContractAt("ROSCA", "DEPLOYED_CONTRACT_ADDRESS")
+
+   // Check contract state
+   await rosca.read.totalParticipants()
+   await rosca.read.currentRound()
+   await rosca.read.contributionAmount()
+
+   // Check status
+   await rosca.read.getCurrentRoundStatus()
+
+   // Get test accounts
+   const [owner, participant1, participant2, participant3] = await hre.viem.getWalletClients()
+
+   // Register participants (each requires 1 ETH)
+   // First participant (owner is already registered during deployment)
+   await rosca.write.registerParticipant({
+     account: participant1.account,
+     value: parseEther("1")
+   })
+
+   // Check status
+   await rosca.read.getCurrentRoundStatus()
+
+   // Second participant
+   await rosca.write.registerParticipant({
+     account: participant2.account,
+     value: parseEther("1")
+   })
+
+   // Check status
+   await rosca.read.getCurrentRoundStatus()
+
+   // Third participant
+   await rosca.write.registerParticipant({
+     account: participant3.account,
+     value: parseEther("1")
+   })
+
+   // Check status
+   await rosca.read.getCurrentRoundStatus()
+
+   // Distribute pool (only by current round recipient)
+   await rosca.write.distributePool()
+   ```
+
+Note: Replace `DEPLOYED_CONTRACT_ADDRESS` with the actual address from deployment.
 
 ### Security Analysis
 
